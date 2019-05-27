@@ -1,0 +1,69 @@
+chp003e2:/home/jp/jplinmwn/tops/mm410t/home> cat check
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+printf "%-25s %-15s %-30s %-15s %-15s %-15s\n" "|Server|" "|Patch|" "|Kernel|" "|Uptime|" "|Disk|" "|Zone|"
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+for i in `cat $1`;
+do
+sgc %$i -S check.call | grep -v Running
+done
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+chp003e2:/home/jp/jplinmwn/tops/mm410t/home>
+chp003e2:/home/jp/jplinmwn/tops/mm410t/home> cat check.call
+ARR[1]=$(nslookup `uname -n` | grep Name | head -n 1 | awk '{print $2}');
+ARR[2]=$(cat /etc/ATTPatchlevel|awk -F : '{print$1}');
+ARR[3]=$(uname -r);
+ARR[4]=$(uptime | awk -F, '{sub(".*up ",x,$1);print $1}'|awk '{ sub(/^[ \t]+/, ""); print }'|tr ' ' '-' );
+ARR[5]=$(df -h / | awk 'NR>1 {split($1,a,"/");print a[3] }'| awk -F '[0-9]' '{print $1}');
+ARR[6]=$(date|awk '{print $5}');
+echo "${ARR[@]}" | awk '{printf "%-25s %-15s %-30s %-15s %-15s %-15s\n", $1,$2,$3,$4,$5,$6}'
+chp003e2:/home/jp/jplinmwn/tops/mm410t/home>
+
+
+
+chp003e2:/home/jp/jplinmwn/tops/mm410t/check> cat e
+echo $* | tr " " "|"
+chp003e2:/home/jp/jplinmwn/tops/mm410t/check>
+chp003e2:/home/jp/jplinmwn/tops/mm410t/check> cat p
+echo $* | tr " " "\n" > servers;
+echo;
+wc -l servers;
+chp003e2:/home/jp/jplinmwn/tops/mm410t/check>
+
+
+=========================================HP-UX
+chp003e2:/home/jp/jphpmwn/tops/mm410t/home> cat summary
+>output;
+echo "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+" >> output;
+printf "    %-21s %-21s %-16s %-15s %-10s\n" "| SERVERS |" "| PATCH-LEVEL |" "| KERNEL |" "| UPTIME |" "| ZONE |" >> output;
+echo "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+" >> output;
+for i in `cat servers`;
+do
+sgc %$i -S p.call | egrep -v 'Running|Last successful login' >> output;
+done
+echo "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+" >> output;
+cat output | grep -v "Last successful login";
+chp003e2:/home/jp/jphpmwn/tops/mm410t/home>
+chp003e2:/home/jp/jphpmwn/tops/mm410t/home> cat servers
+sht048aa
+sht048ab
+sht048ac
+sht046ad
+sht046ae
+sht046af
+sht046ag
+sht048bb
+pht027b1
+sht014g3
+chp003e2:/home/jp/jphpmwn/tops/mm410t/home> cat slist
+echo $* | tr " " "\n" > servers;
+wc -l servers;
+chp003e2:/home/jp/jphpmwn/tops/mm410t/home> cat p.call
+ARR[1]=$(nslookup `uname -n` | grep "Name:" | head -n 1 | awk '{print $2}');
+ARR[2]=$(/usr/sbin/swlist -l patch |grep -i PHZZ_ |  grep -v "#" | tail -1 | awk '{print $1}' | cut -d"_" -f2 | cut -d"." -f1);
+ARR[3]=$(uname -r);
+ARR[4]=$(uptime | awk -F, '{sub(".*up ",x,$1);print $1}'|awk '{ sub(/^[ \t]+/, ""); print }'|tr ' ' '-' );
+ARR[5]=$(date|awk '{print $5}');
+echo "${ARR[@]}" | awk '{printf "%-30s %-18s %-17s %-15s %-15s\n", $1,$2,$3,$4,$5}'
+chp003e2:/home/jp/jphpmwn/tops/mm410t/home> cat FQDN
+for i in `cat servers`; do nslookup $i|awk '/Name/{print $2}' ;done
+chp003e2:/home/jp/jphpmwn/tops/mm410t/home>
